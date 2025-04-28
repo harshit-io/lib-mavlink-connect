@@ -1,14 +1,15 @@
 package com.libmavlinkconnect
 
+import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.facebook.react.module.annotations.ReactModule
-import android.util.Log
 
 @ReactModule(name = LibMavlinkConnectModule.NAME)
-class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
+class LibMavlinkConnectModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
     companion object {
@@ -31,9 +32,9 @@ class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun telemInit(promise: Promise) {
         try {
-            val result = TelemInit()  // Calls your native C++ function
+            val result = TelemInit()
             Log.d(NAME, "Telemetry initialized: $result")
-            promise.resolve(result)  // Return the result of the native function
+            promise.resolve(result)
         } catch (e: Exception) {
             Log.e(NAME, "Error initializing telemetry: ${e.message}")
             promise.reject("TELEMETRY_INIT_ERROR", "Error initializing telemetry: ${e.message}")
@@ -45,7 +46,7 @@ class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
         try {
             val result = getMavlinkDataJson()
             Log.d(NAME, "Mavlink Data: $result")
-            promise.resolve(result)  // Return the data
+            promise.resolve(result)
         } catch (e: Exception) {
             Log.e(NAME, "Error fetching mavlink data: ${e.message}")
             promise.reject("MAVLINK_DATA_ERROR", "Error fetching mavlink data: ${e.message}")
@@ -62,6 +63,14 @@ class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
             Log.e(NAME, "Error sending guided command: ${e.message}")
             promise.reject("SEND_GUIDED_COMMAND_ERROR", "Error sending guided command: ${e.message}")
         }
+    }
+
+    // ADD THIS MISSING METHOD
+    fun sendEvent(eventName: String, eventData: String) {
+        Log.d(NAME, "Sending event to JS: $eventName with data: $eventData")
+        reactContext
+            .getJSModule(RCTDeviceEventEmitter::class.java)
+            .emit(eventName, eventData)
     }
 
     // Native method declarations
