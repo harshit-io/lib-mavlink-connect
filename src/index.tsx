@@ -2,44 +2,30 @@ import { NativeModules } from 'react-native';
 
 const { LibMavlinkConnect } = NativeModules;
 
-if (!LibMavlinkConnect) {
-  throw new Error('LibMavlinkConnect native module is not available. Make sure react-native-lib-mavlink-connect is properly installed.');
-}
+// Export the functions from the native module
+export const telemInit = async (): Promise<string> => {
+  try {
+    const result = await LibMavlinkConnect.telemInit();
+    return result;
+  } catch (error) {
+    throw new Error("Error initializing telemetry: " + error.message);
+  }
+};
 
-/**
- * Initializes the telemetry connection
- */
+export const getMavlinkDataJson = async (): Promise<string> => {
+  try {
+    const result = await LibMavlinkConnect.getMavlinkDataJson();
+    return result;
+  } catch (error) {
+    throw new Error("Error fetching Mavlink data: " + error.message);
+  }
+};
 
-export function initTelemetry(): Promise<string> {
-  return LibMavlinkConnect.telemInit();  // Make sure this matches the Kotlin method name
-}
-
-/**
- * Gets MAVLink data in JSON format
- */
-export function getMavlinkData(): Promise<string> {
-  return LibMavlinkConnect.getMavlinkDataJson();
-}
-
-/**
- * Sends a guided command to the drone
- * @param command - The command to send (e.g., "TAKEOFF")
- */
-export function sendGuidedCommand(command: string): Promise<string> {
-  return LibMavlinkConnect.sendGuidedCommand(command);
-}
-
-/**
- * Stops the telemetry connection
- */
-export function stopTelemetry(): Promise<string> {
-  return LibMavlinkConnect.telemStop();
-}
-
-// You can also export additional utilities, types, or constants
-export const MavlinkCommands = {
-  TAKEOFF: "TAKEOFF",
-  LAND: "LAND",
-  RTL: "RTL",
-  // Add other commands as needed
+export const sendGuidedCommand = async (command: string): Promise<string> => {
+  try {
+    const result = await LibMavlinkConnect.sendGuidedCommand(command);
+    return result;
+  } catch (error) {
+    throw new Error("Error sending guided command: " + error.message);
+  }
 };

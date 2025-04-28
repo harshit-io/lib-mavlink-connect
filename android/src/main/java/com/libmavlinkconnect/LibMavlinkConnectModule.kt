@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 import com.facebook.react.module.annotations.ReactModule
+import android.util.Log
 
 @ReactModule(name = LibMavlinkConnectModule.NAME)
 class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
@@ -16,34 +17,38 @@ class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
 
     init {
         try {
-            System.loadLibrary("testmavlink")  // Load the .so file
-            android.util.Log.d(NAME, "mavlink library loaded successfully")
+            System.loadLibrary("testmavlink")
+            Log.d(NAME, "Mavlink library loaded successfully")
         } catch (e: UnsatisfiedLinkError) {
-            android.util.Log.e(NAME, "Failed to load mavlink library: ${e.message}")
+            Log.e(NAME, "Failed to load mavlink library: ${e.message}")
         }
     }
 
     override fun getName(): String {
         return NAME
     }
-// Should be:
+
     @ReactMethod
     fun telemInit(promise: Promise) {
-    try {
-        val result = TelemInit()  // This calls your native C++ function
-        promise.resolve(result)
-    } catch (e: Exception) {
-        promise.reject("ERROR", e.message)
-    }
+        try {
+            val result = TelemInit()  // Calls your native C++ function
+            Log.d(NAME, "Telemetry initialized: $result")
+            promise.resolve(result)  // Return the result of the native function
+        } catch (e: Exception) {
+            Log.e(NAME, "Error initializing telemetry: ${e.message}")
+            promise.reject("TELEMETRY_INIT_ERROR", "Error initializing telemetry: ${e.message}")
+        }
     }
 
     @ReactMethod
     fun getMavlinkDataJson(promise: Promise) {
         try {
             val result = getMavlinkDataJson()
-            promise.resolve(result)
+            Log.d(NAME, "Mavlink Data: $result")
+            promise.resolve(result)  // Return the data
         } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
+            Log.e(NAME, "Error fetching mavlink data: ${e.message}")
+            promise.reject("MAVLINK_DATA_ERROR", "Error fetching mavlink data: ${e.message}")
         }
     }
 
@@ -51,9 +56,11 @@ class LibMavlinkConnectModule(reactContext: ReactApplicationContext) :
     fun sendGuidedCommand(command: String, promise: Promise) {
         try {
             sendGuidedCommandNative(command)
-            promise.resolve("Guided command sent")
+            Log.d(NAME, "Guided command '$command' sent successfully.")
+            promise.resolve("Guided command '$command' sent successfully.")
         } catch (e: Exception) {
-            promise.reject("ERROR", e.message)
+            Log.e(NAME, "Error sending guided command: ${e.message}")
+            promise.reject("SEND_GUIDED_COMMAND_ERROR", "Error sending guided command: ${e.message}")
         }
     }
 
